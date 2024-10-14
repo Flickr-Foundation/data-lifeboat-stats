@@ -83,8 +83,6 @@
     {% if photo_stats == None %}
       <h1>What Flickr URL do you want stats for?</h1>
 
-      <h2>(galleries/photostreams only for now)</h2>
-
       <form action="" method="post" novalidate>
           {{ form.hidden_tag() }}
           <p>
@@ -98,7 +96,7 @@
       <h1>Here are your stats:</h1>
 
       <p>
-        I looked up the first 500 photos from <strong>{{ photo_stats.url }}</strong> as
+        I looked up the first 500 photos from <strong>{{ form.data.url }}</strong> as
         {% if user == 'public' %}
           <strong>a member of the public</strong>.
         {% else %}
