@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <script src="app.js"></script>
+
+  <link href="style.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --max-width: 46rem;
+      --padding:   1em;
+    }
+
+    header {
+      background: #ff008422;
+      border-bottom: 2px solid #ff0084;
+    }
+
+    body {
+      font-family: sans-serif;
+      font-size: 1.1em;
+      margin:  0;
+      padding: 0;
+
+      min-height:     100vh;
+      display:        flex;
+      flex-direction: column;
+    }
+
+    main {
+      flex: 1;
+    }
+
+    main {
+      width: 100%;
+    }
+
+    header > *, main {
+      max-width: var(--max-width);
+      margin:    0 auto;
+
+      padding-top:    calc(var(--padding) + env(safe-area-inset-top));
+      padding-right:  calc(var(--padding) + env(safe-area-inset-right));
+      padding-bottom: calc(var(--padding) + env(safe-area-inset-bottom));
+      padding-left:   calc(var(--padding) + env(safe-area-inset-left));
+    }
+
+    #visibility > li:not(.selected),
+    #downloads > li:not(.selected),
+    tr.empty > td {
+      color: #999;
+      text-decoration: line-through;
+    }
+
+    .stat {
+      text-align: right;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    {% if current_user.is_anonymous %}
+      <p>
+        You are <strong>not logged in</strong>.
+        You are browsing Flickr as <strong>a public user</strong>.
+        <a href="{{ url_for('log_in_with_flickr') }}">Log in?</a>
+      </p>
+    {% else %}
+      <p>
+        You are logged in as Flickr user <strong>{{ session.token.username }}</strong>.
+        <a href="{{ url_for('logout') }}">Log out?</a>
+      </p>
+    {% endif %}
+  </header>
+
+  <main>
+    {% if photo_stats == None %}
+      <h1>What Flickr URL do you want stats for?</h1>
+
+      <h2>(galleries/photostreams only for now)</h2>
+
+      <form action="" method="post" novalidate>
+          {{ form.hidden_tag() }}
+          <p>
+              {{ form.url.label }}<br>
+              {{ form.url(size=32) }}
+          </p>
+
+          <p>{{ form.submit() }}</p>
+      </form>
+    {% else %}
+      <h1>Here are your stats:</h1>
+
+      <p>
+        I looked up the first 500 photos from <strong>{{ photo_stats.url }}</strong> as
+        {% if user == 'public' %}
+          <strong>a member of the public</strong>.
+        {% else %}
+          the Flickr member <strong>{{ user }}</strong>.
+        {% endif %}
+        <a href="/">Try another URL?</a>
+      </p>
+
+      <p>This selection of photos is:</p>
+      <ul id="visibility">
+        <li {% if photo_stats.visibility.public == photo_stats.total_photos %}class="selected"{% endif %}>Fully public</li>
+        <li {% if photo_stats.visibility.private == photo_stats.total_photos %}class="selected"{% endif %}>Fully private</li>
+        <li {% if photo_stats.visibility.private != photo_stats.total_photos and photo_stats.visibility.public != photo_stats.total_photos %}class="selected"{% endif %}>A mix of public, private, and semi-public photos</li>
+      </ul>
+
+      <h2>
+        Visibility
+      </h2>
+
+      <table>
+        <tr {% if photo_stats.visibility.public == 0 %}class="empty"{% endif %}>
+          <td>Public</td><td class="stat">{{ photo_stats.visibility.public }}</td>
+        </tr>
+        <tr {% if photo_stats.visibility["friends only"] == 0 %}class="empty"{% endif %}>
+          <td>Friends only</td><td class="stat">{{ photo_stats.visibility["friends only"] }}</td>
+        </tr>
+        <tr {% if photo_stats.visibility["family only"] == 0 %}class="empty"{% endif %}>
+          <td>Family only</td><td class="stat">{{ photo_stats.visibility["family only"] }}</td>
+        </tr>
+        <tr {% if photo_stats.visibility["friends and family"] == 0 %}class="empty"{% endif %}>
+          <td>Friends and family</td><td class="stat">{{ photo_stats.visibility["friends and family"] }}</td>
+        </tr>
+        <tr {% if photo_stats.visibility.private == 0 %}class="empty"{% endif %}>
+          <td>Private</td><td class="stat">{{ photo_stats.visibility["private"] }}</td>
+        </tr>
+      </table>
+
+      <h2>Licenses</h2>
+
+      <table>
+        {% for lic in photo_stats.licenses %}
+        <tr {% if photo_stats.licenses.get(lic, 0) == 0 %}class="empty"{% endif %}>
+          <td>{{ lic }}</td>
+          <td class="stat">{{ photo_stats.licenses.get(lic, 0) }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+
+      <h2>Safety level</h2>
+
+      <table>
+        <tr {% if photo_stats.safety.get('safe', 0) == 0 %}class="empty"{% endif %}>
+          <td>Safe</td><td class="stat">{{ photo_stats.safety.get('safe', 0) }}</td>
+        </tr>
+        <tr {% if photo_stats.safety.get('moderate', 0) == 0 %}class="empty"{% endif %}>
+          <td>Moderate</td><td class="stat">{{ photo_stats.safety.get('moderate', 0) }}</td>
+        </tr>
+        <tr {% if photo_stats.safety.get('restricted', 0) == 0 %}class="empty"{% endif %}>
+          <td>Restricted</td><td class="stat">{{ photo_stats.safety.get('restricted', 0) }}</td>
+        </tr>
+      </table>
+
+      <h2>Downloads</h2>
+
+      <ul id="downloads">
+        <li {% if photo_stats.downloads_disabled == 0 %}class="selected"{% endif %}>All of these photos can be downloaded</li>
+        <li {% if photo_stats.downloads_disabled == photo_stats.total_photos %}class="selected"{% endif %}>None of these photos can be downloaded</li>
+        <li {% if photo_stats.downloads_disabled != 0 and photo_stats.downloads_disabled != photo_stats.total_photos %}class="selected"{% endif %}>
+          Only some of these photos can be downloaded{% if photo_stats.downloads_disabled != 0 and photo_stats.downloads_disabled != photo_stats.total_photos %}:
+          the owner{% if photo_stats.downloads_disabled > 1 %}s{% endif %}
+          have explicitly disabled downloading of {{ photo_stats.downloads_disabled }} photo{% if photo_stats.downloads_disabled > 1 %}s{% endif %}
+        {% endif %}</li>
+      </ul>
+    {% endif %}
+  </main>
+</body>
+
+</html>

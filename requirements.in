@@ -1,0 +1,6 @@
+authlib
+flask
+flask-login
+flask-wtf
+flickr-photos-api
+keyring
