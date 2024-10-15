@@ -21,3 +21,25 @@ We have a number of example Data Lifeboats we're thinking of, and it's useful to
 
 *   It can only fetch the first 500 photos from a URL
 *   It only supports a limited number of URL types
+
+## Running the app
+
+To run a local dev environment:
+
+```
+$ flask run --debug
+```
+
+To start the app in prod:
+
+```
+export SCRIPT_NAME=/tools/data-lifeboat-stats
+
+gunicorn app:app \
+  --workers 4 \
+  --bind 127.0.0.1:8006 \
+  --access-logfile access.log \
+  --log-file app.log \
+  --pid data_lifeboat_stats.pid \
+  --daemon
+```
