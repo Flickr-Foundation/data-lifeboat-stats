@@ -3,4 +3,5 @@ flask
 flask-login
 flask-wtf
 flickr-photos-api
+gunicorn
 keyring

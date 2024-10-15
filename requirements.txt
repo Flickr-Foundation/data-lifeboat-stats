@@ -29,6 +29,8 @@ flickr-photos-api==2.11.2
     # via -r requirements.in
 flickr-url-parser==1.10.0
     # via flickr-photos-api
+gunicorn==23.0.0
+    # via -r requirements.in
 h11==0.14.0
     # via httpcore
 httpcore==1.0.6
@@ -67,6 +69,8 @@ more-itertools==10.5.0
     # via
     #   jaraco-classes
     #   jaraco-functools
+packaging==24.1
+    # via gunicorn
 pycparser==2.22
     # via cffi
 silver-nitrate==1.1.3
