@@ -158,8 +158,7 @@ def get_photo_stats(url: str):
         
         photos = data.findall(".//photo")
     else:
-        assert 0
-        photos = []
+        raise ValueError
     
     for p in photos:
         if p.attrib['ispublic'] == '1':
@@ -190,17 +189,20 @@ def get_photo_stats(url: str):
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    form = FlickrForm()
-    
-    if form.validate_on_submit():
-        photo_stats = get_photo_stats(form.url.data)
-    else:
-        photo_stats = None
-    
     if current_user.is_authenticated:
         user = session['token']['username'] + ' (' + session['token']['user_nsid'] + ')'
     else:
         user = 'public'
+    
+    form = FlickrForm()
+    
+    if form.validate_on_submit():
+        try:
+            photo_stats = get_photo_stats(form.url.data)
+        except Exception:
+            return render_template("index.html", form=form, error=True, user=user, url=form.url.data)
+    else:
+        photo_stats = None
     
     return render_template("index.html", form=form, photo_stats=photo_stats, user=user)
     

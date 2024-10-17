@@ -102,7 +102,7 @@
         {% else %}
           the Flickr member <strong>{{ user }}</strong>.
         {% endif %}
-        <a href="/">Try another URL?</a>
+        <a href="{{ url_for('index') }}">Try another URL?</a>
       </p>
 
       <p>This selection of photos is:</p>
